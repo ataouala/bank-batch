@@ -8,6 +8,9 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -53,13 +56,20 @@ public class SpringBatchConfig {
         fileItemReader.setName("CSV-READER");
         fileItemReader.setLinesToSkip(1);
         fileItemReader.setResource(resource);
-        fileItemReader.setLineMapper(lineMapper());
+        fileItemReader.setLineMapper(mapper());
         return fileItemReader;
     }
 
     @Bean
-    public LineMapper<BankTransaction> lineMapper() {
-
-
+    public LineMapper<BankTransaction> mapper() {
+        DefaultLineMapper<BankTransaction> lineMapper = new DefaultLineMapper<>();
+        DelimitedLineTokenizer lineTokenizer= new DelimitedLineTokenizer();
+        lineTokenizer.setDelimiter(",");
+        lineTokenizer.setStrict(false);
+        lineTokenizer.setNames("id","accountID","strDate","transactionType","amount");
+        lineMapper.setLineTokenizer(lineTokenizer);
+        BeanWrapperFieldSetMapper<BankTransaction> fieldSetMapper =new BeanWrapperFieldSetMapper<>();
+        lineMapper.setFieldSetMapper(fieldSetMapper);
+        return lineMapper;
     }
 }
